@@ -1,0 +1,99 @@
+﻿@page "/filemanager"
+@using Syncfusion.Blazor.FileManager
+@using Syncfusion.Blazor.DropDowns
+@using Syncfusion.Blazor.Navigations
+@using Syncfusion.Blazor.SplitButtons
+<PageTitle>File Manager</PageTitle>
+<h6>File Manager</h6>
+
+@inject IJSRuntime JSRuntime;
+<div style="height:calc(100vh - 8rem)">
+<SfFileManager TValue="FileManagerDirectoryContent" ShowThumbnail="true" AllowDragAndDrop="true" AllowMultiSelection="true"  Height="100%">
+    <FileManagerAjaxSettings Url="/api/FileManager/FileOperations"
+                             UploadUrl="/api/FileManager/Upload"
+                             DownloadUrl="/api/FileManager/Download"
+                             GetImageUrl="/api/FileManager/GetImage">
+    </FileManagerAjaxSettings>
+        @*<FileManagerUploadSettings DirectoryUpload="@IsDirectoryUpload"></FileManagerUploadSettings>*@
+        <FileManagerUploadSettings DirectoryUpload="@IsDirectoryUpload"></FileManagerUploadSettings>
+
+
+        <FileManagerEvents TValue="FileManagerDirectoryContent" ToolbarCreated="Created" ToolbarItemClicked="ItemClicked"></FileManagerEvents>
+</SfFileManager>
+
+
+
+
+
+   </div>
+<style>
+    .ulstyle {
+        margin: 0px;
+        padding-left: 20px;
+        display: inline-block;
+    }
+    .list {
+    float: left;
+    line-height: 20px;
+    margin: 10px;
+    min-width: 200px;
+    }
+</style>
+
+     <srcipt>
+
+  
+     </srcipt>
+
+@code{
+    public bool IsDirectoryUpload = true;
+    public void ItemClicked(ToolbarClickEventArgs<FileManagerDirectoryContent> args)
+    {
+        if (args.Item.Text == "Upload")
+        {
+            args.Cancel = true;
+        }
+    }
+    public async void ItemSelected(MenuEventArgs args)
+    {
+        if (args.Item.Id == "Folder")
+        {
+            IsDirectoryUpload = true;
+        }
+       else
+       {
+           IsDirectoryUpload = false;
+        }
+        await Task.Delay(100);
+       await JSRuntime.InvokeVoidAsync("uploadClick");
+       
+    }
+
+
+
+    public void Created(ToolbarCreateEventArgs args)
+    {
+        foreach(var item in args.Items.ToArray())
+        {
+            if(item.Text == "Upload")
+            {
+                item.Template = RenderDropdown();
+                break;
+            }
+        }
+    }
+    public RenderFragment RenderDropdown()
+    {
+        return
+        @<div class="directory-upload">
+            <SfDropDownButton IconCss="e-icons e-fe-upload" CssClass=" e-tbar-btn e-tbtn-txt  e-fe-popup" @attributes="@(new Dictionary<string, object> { {"tabindex", -1 } })" >
+            <span class="e-tbar-btn-text e-tbar-ddb-text">Upload</span>
+            <DropDownButtonEvents ItemSelected="@ItemSelected"></DropDownButtonEvents>
+            <DropDownMenuItems>
+                    <DropDownMenuItem Id="Folder" Text="Folder"></DropDownMenuItem>
+                    <DropDownMenuItem Id="Files" Text="Files"></DropDownMenuItem>
+            </DropDownMenuItems>
+            </SfDropDownButton>
+            </div>;
+    }
+}
